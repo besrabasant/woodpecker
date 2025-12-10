@@ -57,3 +57,5 @@ docs/openapi.json
 
 # Removed once v3.0.x is minimum version to be touched
 docs/swagger.json
+local-forge
+/tmp/**

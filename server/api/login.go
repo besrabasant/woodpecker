@@ -185,8 +185,16 @@ func HandleAuth(c *gin.Context) {
 	}
 
 	if user == nil || errors.Is(err, types.RecordNotExist) {
-		// if self-registration is disabled we should return a not authorized error
-		if !server.Config.Permissions.Open && !server.Config.Permissions.Admins.IsAdmin(userFromForge) {
+		allowRegistration := server.Config.Permissions.Open || server.Config.Permissions.Admins.IsAdmin(userFromForge)
+		if !allowRegistration {
+			if forgeModel, ferr := _store.ForgeGet(forgeID); ferr != nil {
+				log.Error().Err(ferr).Msgf("cannot read forge %d config to check registration bypass", forgeID)
+			} else if forgeModel.Type == model.ForgeTypeAddon {
+				allowRegistration = true
+			}
+		}
+
+		if !allowRegistration {
 			log.Error().Msgf("cannot register %s. registration closed", userFromForge.Login)
 			c.Redirect(http.StatusSeeOther, server.Config.Server.RootPath+"/login?error=registration_closed")
 			return

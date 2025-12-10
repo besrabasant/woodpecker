@@ -216,6 +216,10 @@ build-server: build-ui generate-openapi ## Build server
 build-agent: ## Build agent
 	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -tags '$(TAGS)' -ldflags '${LDFLAGS}' -o ${DIST_DIR}/woodpecker-agent${BIN_SUFFIX} go.woodpecker-ci.org/woodpecker/v3/cmd/agent
 
+.PHONY: build-local-forge
+build-local-forge: ## Build local addon forge
+	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -tags '$(TAGS)' -ldflags '${LDFLAGS}' -o local-forge go.woodpecker-ci.org/woodpecker/v3/cmd/local-forge
+
 build-cli: ## Build cli
 	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -tags '$(TAGS)' -ldflags '${LDFLAGS}' -o ${DIST_DIR}/woodpecker-cli${BIN_SUFFIX} go.woodpecker-ci.org/woodpecker/v3/cmd/cli
 

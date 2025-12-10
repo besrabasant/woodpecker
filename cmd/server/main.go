@@ -20,6 +20,7 @@ import (
 	"context"
 	"os"
 
+	_ "github.com/goforj/godump"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/rs/zerolog/log"
 
