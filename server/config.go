@@ -95,4 +95,13 @@ var Config = struct {
 	}
 	ManualActions []model.ManualActionDefinition
 	PipelineTabs []model.PipelineTabDefinition
+	Components struct {
+		Reports struct {
+			BaseURL   string
+			Endpoint  string
+			AccessKey string
+			SecretKey string
+			Bucket    string
+		}
+	}
 }{}

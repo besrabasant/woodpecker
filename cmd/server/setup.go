@@ -272,6 +272,11 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 		}
 		server.Config.PipelineTabs = tabs
 	}
+	server.Config.Components.Reports.BaseURL = strings.TrimSpace(c.String("server-reports-base-url"))
+	server.Config.Components.Reports.Endpoint = strings.TrimSpace(c.String("server-reports-s3-endpoint"))
+	server.Config.Components.Reports.AccessKey = strings.TrimSpace(c.String("server-reports-s3-access-key"))
+	server.Config.Components.Reports.SecretKey = strings.TrimSpace(c.String("server-reports-s3-secret-key"))
+	server.Config.Components.Reports.Bucket = strings.TrimSpace(c.String("server-reports-s3-bucket"))
 	server.Config.Pipeline.Networks = c.StringSlice("network")
 	server.Config.Pipeline.Volumes = c.StringSlice("volume")
 	server.Config.WebUI.EnableSwagger = c.Bool("enable-swagger")

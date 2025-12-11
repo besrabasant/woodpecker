@@ -1,16 +1,16 @@
 <template>
   <Panel>
-    <div class="flex flex-col gap-4">
+    <div class="flex min-h-[80vh] flex-col gap-4">
       <div>
         <h2 class="text-lg font-semibold text-wp-text-100">{{ $t('repo.pipeline.reports.title') }}</h2>
         <p class="text-sm text-wp-text-alt-100">
           {{ description || $t('repo.pipeline.reports.desc') }}
         </p>
       </div>
-      <div class="rounded border border-wp-border-default bg-white">
+      <div class="flex-1 rounded border border-wp-border-default bg-white h-full">
         <iframe
           :src="iframeSrc"
-          class="h-96 w-full"
+          class="min-h-[75vh] w-full"
           frameborder="0"
           sandbox="allow-same-origin allow-scripts"
         />

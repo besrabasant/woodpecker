@@ -111,6 +111,31 @@ var flags = append([]cli.Flag{
 		Usage:   "path to a JSON file that defines additional pipeline tabs and their components",
 	},
 	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_REPORTS_BASE_URL"),
+		Name:    "server-reports-base-url",
+		Usage:   "base URL for fetching pipeline reports HTML (deprecated when using S3 options)",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_REPORTS_S3_ENDPOINT"),
+		Name:    "server-reports-s3-endpoint",
+		Usage:   "MinIO/S3 endpoint to fetch pipeline reports from",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_REPORTS_S3_ACCESS_KEY"),
+		Name:    "server-reports-s3-access-key",
+		Usage:   "MinIO/S3 access key for pipeline reports",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_REPORTS_S3_SECRET_KEY"),
+		Name:    "server-reports-s3-secret-key",
+		Usage:   "MinIO/S3 secret key for pipeline reports",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_REPORTS_S3_BUCKET"),
+		Name:    "server-reports-s3-bucket",
+		Usage:   "MinIO/S3 bucket containing pipeline reports",
+	},
+	&cli.StringFlag{
 		Sources: cli.EnvVars("WOODPECKER_GRPC_ADDR"),
 		Name:    "grpc-addr",
 		Usage:   "grpc address",

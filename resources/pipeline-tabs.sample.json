@@ -8,7 +8,7 @@
       {
         "type": "pipeline-reports-section",
         "props": {
-          "description": "Custom webhook / test automation reports"
+          "description": "Test reports"
         }
       }
     ]
