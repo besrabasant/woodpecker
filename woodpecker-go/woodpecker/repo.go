@@ -66,7 +66,8 @@ type PipelineLastOptions struct {
 }
 
 type RepoPostOptions struct {
-	ForgeRemoteID int64
+	ForgeRemoteID       int64
+	AllowWebhookFailure bool
 }
 
 type RepoMoveOptions struct {
@@ -126,6 +127,9 @@ func (opt *PipelineLastOptions) QueryEncode() string {
 func (opt *RepoPostOptions) QueryEncode() string {
 	query := make(url.Values)
 	query.Add("forge_remote_id", strconv.FormatInt(opt.ForgeRemoteID, 10))
+	if opt.AllowWebhookFailure {
+		query.Add("allow_webhook_failure", "true")
+	}
 	return query.Encode()
 }
 

@@ -78,6 +78,15 @@ Woodpecker can be extended via plugins.
 The [plugin overview website](https://woodpecker-ci.org/plugins) helps browsing available plugins.
 It combines both plugins by the Woodpecker core team and community-maintained ones.
 
+## Useful Environment Variables
+
+When running Woodpecker locally (for example via the included `docker-compose` set-up) you can use the following optional environment variables to control webhook behaviour:
+
+- `WOODPECKER_EXPERT_DISABLE_FORGE_WEBHOOKS`: disables webhook activation/deactivation when enabling repositories. This is useful when the forge cannot reach your local Woodpecker instance (e.g. running on `localhost`).
+- `WOODPECKER_EXPERT_ALLOW_WEBHOOK_FAILURE`: keeps repository activation successful even if Woodpecker fails to create the webhook at the forge. Combine with manual triggering or other automation to run pipelines without webhooks.
+
+Both variables are shown in `./.env` for convenience and can also be provided directly to the server container (or via `--server-disable-forge-webhooks` / `--server-allow-webhook-failure` flags).
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=woodpecker-ci/woodpecker&type=Date)](https://star-history.com/#woodpecker-ci/woodpecker&Date)

@@ -60,6 +60,16 @@ func PostRepo(c *gin.Context) {
 		c.String(http.StatusBadRequest, "No forge_remote_id provided")
 		return
 	}
+	allowWebhookFailure := server.Config.Server.AllowWebhookFailure
+	if val, exists := c.GetQuery("allow_webhook_failure"); exists {
+
+		var parseErr error
+		allowWebhookFailure, parseErr = strconv.ParseBool(val)
+		if parseErr != nil {
+			c.String(http.StatusBadRequest, "Invalid allow_webhook_failure value")
+			return
+		}
+	}
 
 	repo, err := _store.GetRepoForgeID(user.ForgeID, forgeRemoteID)
 	enabledOnce := err == nil // if there's no error, the repo was found and enabled once already
@@ -167,12 +177,20 @@ func PostRepo(c *gin.Context) {
 		sig,
 	)
 
-	err = _forge.Activate(c, user, repo, hookURL)
-	if err != nil {
-		msg := "could not create webhook in forge."
-		log.Error().Err(err).Msg(msg)
-		c.String(http.StatusInternalServerError, msg)
-		return
+	if server.Config.Server.DisableForgeWebhooks {
+		log.Warn().Str("repo", repo.FullName).Msg("skipping forge webhook activation because server-disable-forge-webhooks is enabled")
+	} else {
+		err = _forge.Activate(c, user, repo, hookURL)
+		if err != nil {
+			if allowWebhookFailure {
+				log.Warn().Err(err).Str("repo", repo.FullName).Msg("failed to create forge webhook, continuing because allow_webhook_failure enabled")
+			} else {
+				msg := "could not create webhook in forge."
+				log.Error().Err(err).Msg(msg)
+				c.String(http.StatusInternalServerError, msg)
+				return
+			}
+		}
 	}
 
 	if enabledOnce {
@@ -457,7 +475,9 @@ func DeleteRepo(c *gin.Context) {
 		return
 	}
 
-	if err := _forge.Deactivate(c, user, repo, server.Config.Server.WebhookHost); err != nil {
+	if server.Config.Server.DisableForgeWebhooks {
+		log.Warn().Str("repo", repo.FullName).Msg("skipping forge webhook deactivation because server-disable-forge-webhooks is enabled")
+	} else if err := _forge.Deactivate(c, user, repo, server.Config.Server.WebhookHost); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
@@ -583,12 +603,16 @@ func MoveRepo(c *gin.Context) {
 		sig,
 	)
 
-	if err := _forge.Deactivate(c, user, repo, host); err != nil {
-		log.Trace().Err(err).Msgf("deactivate repo '%s' for move to activate later, got an error", strconv.FormatInt(repo.ID, 10))
-	}
-	if err := _forge.Activate(c, user, repo, hookURL); err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	if server.Config.Server.DisableForgeWebhooks {
+		log.Warn().Str("repo", repo.FullName).Msg("skipping forge webhook update during move because server-disable-forge-webhooks is enabled")
+	} else {
+		if err := _forge.Deactivate(c, user, repo, host); err != nil {
+			log.Trace().Err(err).Msgf("deactivate repo '%s' for move to activate later, got an error", strconv.FormatInt(repo.ID, 10))
+		}
+		if err := _forge.Activate(c, user, repo, hookURL); err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 	c.Status(http.StatusNoContent)
 }
@@ -723,6 +747,10 @@ func repairRepo(c *gin.Context, repo *model.Repo, updatePermissions bool) error 
 	}
 
 	// remove webhook (deactivate) and recreate it (activate)
+	if server.Config.Server.DisableForgeWebhooks {
+		log.Warn().Str("repo", repo.FullName).Msg("skipping forge webhook repair because server-disable-forge-webhooks is enabled")
+		return nil
+	}
 	if err := _forge.Deactivate(c, repoUser, repo, host); err != nil {
 		log.Debug().Err(err).Msgf("deactivate repo '%s' to repair failed", repo.FullName)
 	}

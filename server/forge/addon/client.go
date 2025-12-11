@@ -54,15 +54,29 @@ func Load(file string) (forge.Forge, error) {
 
 	raw, err := rpcClient.Dispense(pluginKey)
 	if err != nil {
+		client.Kill()
 		return nil, err
 	}
 
 	extension, _ := raw.(forge.Forge)
-	return extension, nil
+	return &clientForge{
+		Forge:  extension,
+		client: client,
+	}, nil
 }
 
 type RPC struct {
 	client *rpc.Client
+}
+
+type clientForge struct {
+	forge.Forge
+	client *plugin.Client
+}
+
+func (c *clientForge) Close() error {
+	c.client.Kill()
+	return nil
 }
 
 func (g *RPC) Name() string {

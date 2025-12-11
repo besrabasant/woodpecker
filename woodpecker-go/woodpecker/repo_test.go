@@ -343,6 +343,26 @@ func TestClientRepoPost(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "allow webhook failure",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				assert.Equal(t, http.MethodPost, r.Method)
+				assert.Equal(t, "/api/repos?allow_webhook_failure=true&forge_remote_id=10", r.URL.RequestURI())
+
+				w.WriteHeader(http.StatusOK)
+				_, err := fmt.Fprint(w, `{"id":1,"forge_remote_id":"10"}`)
+				assert.NoError(t, err)
+			},
+			opts: RepoPostOptions{
+				ForgeRemoteID:       10,
+				AllowWebhookFailure: true,
+			},
+			expected: &Repo{
+				ID:            1,
+				ForgeRemoteID: "10",
+			},
+			wantErr: false,
+		},
+		{
 			name: "server error",
 			handler: func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)

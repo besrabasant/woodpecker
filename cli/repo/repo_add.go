@@ -29,7 +29,13 @@ var repoAddCmd = &cli.Command{
 	Name:      "add",
 	Usage:     "add a repository",
 	ArgsUsage: "<forge-remote-id>",
-	Action:    repoAdd,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "allow-webhook-failure",
+			Usage: "keep the repository active even if webhook creation fails",
+		},
+	},
+	Action: repoAdd,
 }
 
 func repoAdd(ctx context.Context, c *cli.Command) error {
@@ -45,7 +51,8 @@ func repoAdd(ctx context.Context, c *cli.Command) error {
 	}
 
 	opt := woodpecker.RepoPostOptions{
-		ForgeRemoteID: int64(forgeRemoteID),
+		ForgeRemoteID:       int64(forgeRemoteID),
+		AllowWebhookFailure: c.Bool("allow-webhook-failure"),
 	}
 
 	repo, err := client.RepoPost(opt)

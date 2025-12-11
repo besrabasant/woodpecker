@@ -565,6 +565,16 @@ var flags = append([]cli.Flag{
 		Name:    "server-webhook-host",
 		Usage:   "fully qualified woodpecker server url, called by the webhooks of the forge. Format: <scheme>://<host>[/<prefix path>]",
 	},
+	&cli.BoolFlag{
+		Sources: cli.EnvVars("WOODPECKER_EXPERT_DISABLE_FORGE_WEBHOOKS"),
+		Name:    "server-disable-forge-webhooks",
+		Usage:   "disable automatic forge webhook activation/deactivation when enabling repositories",
+	},
+	&cli.BoolFlag{
+		Sources: cli.EnvVars("WOODPECKER_EXPERT_ALLOW_WEBHOOK_FAILURE"),
+		Name:    "server-allow-webhook-failure",
+		Usage:   "allow repository activation to continue even if webhook creation fails",
+	},
 	//
 	// secrets encryption in DB
 	//

@@ -15,11 +15,13 @@
 package services
 
 import (
+	"context"
 	"crypto"
 	"strings"
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
+	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v3"
 
 	"go.woodpecker-ci.org/woodpecker/v3/server/forge"
@@ -83,6 +85,11 @@ func NewManager(c *cli.Command, store store.Store, setupForge SetupForge) (Manag
 		return nil, err
 	}
 
+	forgeCache := ttlcache.New(ttlcache.WithDisableTouchOnHit[int64, forge.Forge]())
+	forgeCache.OnEviction(func(_ context.Context, _ ttlcache.EvictionReason, item *ttlcache.Item[int64, forge.Forge]) {
+		closeForge(item.Value())
+	})
+
 	return &manager{
 		signaturePrivateKey: signaturePrivateKey,
 		signaturePublicKey:  signaturePublicKey,
@@ -91,7 +98,7 @@ func NewManager(c *cli.Command, store store.Store, setupForge SetupForge) (Manag
 		registry:            setupRegistryService(store, c.String("docker-config")),
 		config:              configService,
 		environment:         environment.Parse(c.StringSlice("environment")),
-		forgeCache:          ttlcache.New(ttlcache.WithDisableTouchOnHit[int64, forge.Forge]()),
+		forgeCache:          forgeCache,
 		setupForge:          setupForge,
 		client:              client,
 	}, nil
@@ -143,6 +150,11 @@ func (m *manager) ForgeByID(id int64) (forge.Forge, error) {
 		return item.Value(), nil
 	}
 
+	var oldForge forge.Forge
+	if item != nil {
+		oldForge = item.Value()
+	}
+
 	forgeModel, err := m.store.ForgeGet(id)
 	if err != nil {
 		return nil, err
@@ -155,5 +167,27 @@ func (m *manager) ForgeByID(id int64) (forge.Forge, error) {
 
 	m.forgeCache.Set(id, forge, forgeCacheTTL)
 
+	closeForge(oldForge)
+
 	return forge, nil
+}
+
+func (m *manager) Close() error {
+	for _, item := range m.forgeCache.Items() {
+		closeForge(item.Value())
+	}
+	return nil
+}
+
+func closeForge(f forge.Forge) {
+	if f == nil {
+		return
+	}
+	closer, ok := f.(interface{ Close() error })
+	if !ok {
+		return
+	}
+	if err := closer.Close(); err != nil {
+		log.Debug().Err(err).Msg("failed to close forge")
+	}
 }

@@ -116,6 +116,15 @@ func run(ctx context.Context, c *cli.Command) error {
 	if err != nil {
 		return fmt.Errorf("can't setup globals: %w", err)
 	}
+	defer func() {
+		if closer, ok := server.Config.Services.Manager.(interface {
+			Close() error
+		}); ok {
+			if err := closer.Close(); err != nil {
+				log.Error().Err(err).Msg("could not close manager services")
+			}
+		}
+	}()
 
 	// wait for all services until one do stops with an error
 	serviceWaitingGroup := errgroup.Group{}
