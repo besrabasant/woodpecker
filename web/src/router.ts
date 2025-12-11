@@ -2,7 +2,6 @@ import type { Component } from 'vue';
 import type { RouteRecordRaw } from 'vue-router';
 import { createRouter, createWebHistory } from 'vue-router';
 
-import useAuthentication from '~/compositions/useAuthentication';
 import useConfig from '~/compositions/useConfig';
 import useUserConfig from '~/compositions/useUserConfig';
 
@@ -108,6 +107,12 @@ const routes: RouteRecordRaw[] = [
                 path: 'debug',
                 name: 'repo-pipeline-debug',
                 component: (): Component => import('~/views/repo/pipeline/PipelineDebug.vue'),
+                props: true,
+              },
+              {
+                path: 'tabs/:tabId',
+                name: 'repo-pipeline-tab',
+                component: (): Component => import('~/views/repo/pipeline/PipelineDynamicTab.vue'),
                 props: true,
               },
             ],
@@ -376,8 +381,8 @@ router.beforeEach(async (to, _, next) => {
     next(redirectUrl);
   }
 
-  const authentication = useAuthentication();
-  // const authenticationRequired = to.matched.some((record) => true || record.meta.authentication === 'required');
+  // const authentication = useAuthentication();
+  // const authenticationRequired = to.matched.some((record) => record.meta.authentication === 'required');
   // if (authenticationRequired && !authentication.isAuthenticated) {
   //   next({ name: 'login', query: { url: to.fullPath } });
   //   return;

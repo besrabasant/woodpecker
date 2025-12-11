@@ -287,6 +287,14 @@
         "metadata_exec_title": "Re-run pipeline locally",
         "metadata_exec_desc": "Download the metadata of this pipeline to run it locally. This allows you to fix problems and test changes before committing them. The Woodpecker CLI must be installed locally in the same version as the server."
       },
+      "tabs": {
+        "empty": "This tab has no content configured."
+      },
+      "reports": {
+        "title": "Reports",
+        "desc": "Review generated reports or artifacts for this pipeline.",
+        "empty": "No reports available for this pipeline yet."
+      },
       "view": "View pipeline"
     }
   },

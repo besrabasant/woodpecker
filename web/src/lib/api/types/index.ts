@@ -12,3 +12,4 @@ export * from './secret';
 export * from './user';
 export * from './webhook';
 export * from './manual-action';
+export * from './pipeline-tab';

@@ -106,6 +106,11 @@ var flags = append([]cli.Flag{
 		Usage:   "path to a JSON file that defines manual webhook trigger actions exposed in the UI",
 	},
 	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_PIPELINE_TABS_FILE"),
+		Name:    "server-pipeline-tabs-file",
+		Usage:   "path to a JSON file that defines additional pipeline tabs and their components",
+	},
+	&cli.StringFlag{
 		Sources: cli.EnvVars("WOODPECKER_GRPC_ADDR"),
 		Name:    "grpc-addr",
 		Usage:   "grpc address",

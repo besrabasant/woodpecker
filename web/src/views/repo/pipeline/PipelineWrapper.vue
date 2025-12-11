@@ -101,6 +101,13 @@
       :to="{ name: 'repo-pipeline-debug' }"
       :title="$t('repo.pipeline.debug.title')"
     />
+    <Tab
+      v-for="tab in dynamicPipelineTabs"
+      :key="tab.id"
+      :icon="tab.icon || 'file'"
+      :to="{ name: 'repo-pipeline-tab', params: { tabId: tab.id, pipelineId: pipelineIdParam } }"
+      :title="tab.title"
+    />
 
     <router-view />
   </Scaffold>
@@ -126,7 +133,7 @@ import { provide, requiredInject } from '~/compositions/useInjectProvide';
 import useNotifications from '~/compositions/useNotifications';
 import usePipeline from '~/compositions/usePipeline';
 import { useRouteBack } from '~/compositions/useRouteBack';
-import type { Pipeline, PipelineConfig } from '~/lib/api/types';
+import type { Pipeline, PipelineConfig, PipelineTabDefinition } from '~/lib/api/types';
 import { usePipelineStore } from '~/store/pipelines';
 
 const props = defineProps<{
@@ -144,6 +151,7 @@ const i18n = useI18n();
 const pipelineStore = usePipelineStore();
 const { durationAsNumber } = useDate();
 const pipelineId = toRef(props, 'pipelineId');
+const pipelineIdParam = computed(() => pipelineId.value);
 const _repoId = toRef(props, 'repoId');
 const repositoryId = computed(() => Number.parseInt(_repoId.value, 10));
 const repo = requiredInject('repo');
@@ -155,6 +163,8 @@ provide('pipeline', pipeline as Ref<Pipeline>); // can't be undefined because of
 
 const pipelineConfigs = ref<PipelineConfig[]>();
 provide('pipeline-configs', pipelineConfigs);
+const dynamicPipelineTabs = ref<PipelineTabDefinition[]>([]);
+provide('pipeline-tabs', dynamicPipelineTabs);
 
 watch(
   pipeline,
@@ -174,6 +184,12 @@ async function loadPipeline(): Promise<void> {
   }
 
   pipelineConfigs.value = await apiClient.getPipelineConfig(repo.value.id, pipeline.value.number);
+  try {
+    dynamicPipelineTabs.value = await apiClient.getPipelineTabs(repo.value.id, pipeline.value.number);
+  } catch (error) {
+    console.error('Failed to load pipeline tabs', error);
+    dynamicPipelineTabs.value = [];
+  }
 }
 
 const { doSubmit: cancelPipeline, isLoading: isCancelingPipeline } = useAsyncAction(async () => {

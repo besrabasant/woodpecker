@@ -265,6 +265,13 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 		}
 		server.Config.ManualActions = manualActions
 	}
+	if tabsFile := strings.TrimSpace(c.String("server-pipeline-tabs-file")); tabsFile != "" {
+		tabs, err := loadPipelineTabs(tabsFile)
+		if err != nil {
+			return err
+		}
+		server.Config.PipelineTabs = tabs
+	}
 	server.Config.Pipeline.Networks = c.StringSlice("network")
 	server.Config.Pipeline.Volumes = c.StringSlice("volume")
 	server.Config.WebUI.EnableSwagger = c.Bool("enable-swagger")
@@ -310,4 +317,26 @@ func loadManualActions(path string) ([]model.ManualActionDefinition, error) {
 		seen[defs[i].ID] = struct{}{}
 	}
 	return defs, nil
+}
+
+func loadPipelineTabs(path string) ([]model.PipelineTabDefinition, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read pipeline tabs file: %w", err)
+	}
+	tabs := make([]model.PipelineTabDefinition, 0)
+	if err := json.Unmarshal(data, &tabs); err != nil {
+		return nil, fmt.Errorf("parse pipeline tabs file: %w", err)
+	}
+	seen := map[string]struct{}{}
+	for _, tab := range tabs {
+		if err := tab.Validate(); err != nil {
+			return nil, err
+		}
+		if _, ok := seen[tab.ID]; ok {
+			return nil, fmt.Errorf("duplicate pipeline tab id %s", tab.ID)
+		}
+		seen[tab.ID] = struct{}{}
+	}
+	return tabs, nil
 }

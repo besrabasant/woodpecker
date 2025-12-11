@@ -94,4 +94,5 @@ var Config = struct {
 		OwnersAllowlist *permissions.OwnersAllowlist
 	}
 	ManualActions []model.ManualActionDefinition
+	PipelineTabs []model.PipelineTabDefinition
 }{}

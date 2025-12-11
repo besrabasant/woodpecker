@@ -21,6 +21,7 @@ import (
 	"go.woodpecker-ci.org/woodpecker/v3/server"
 	"go.woodpecker-ci.org/woodpecker/v3/server/api"
 	"go.woodpecker-ci.org/woodpecker/v3/server/api/debug"
+	reports "go.woodpecker-ci.org/woodpecker/v3/server/components/reports"
 	"go.woodpecker-ci.org/woodpecker/v3/server/router/middleware/session"
 )
 
@@ -113,6 +114,8 @@ func apiRoutes(e *gin.RouterGroup) {
 					repo.GET("/pipelines/:number", api.GetPipeline)
 					repo.GET("/pipelines/:number/config", api.GetPipelineConfig)
 					repo.GET("/pipelines/:number/metadata", session.MustPush, api.GetPipelineMetadata)
+					repo.GET("/pipelines/:number/tabs", session.MustPull, api.GetPipelineTabs)
+					reports.Routes(repo)
 
 					// requires push permissions
 					repo.POST("/pipelines/:number", session.MustPush, api.PostPipeline)
@@ -140,9 +143,9 @@ func apiRoutes(e *gin.RouterGroup) {
 					repo.PATCH("/registries/:registry", session.MustPush, api.PatchRegistry)
 					repo.DELETE("/registries/:registry", session.MustPush, api.DeleteRegistry)
 
-						repo.GET("/manual-actions", session.MustPush, api.GetManualActions)
-						repo.POST("/manual-actions/:actionId", session.MustPush, api.TriggerManualAction)
-						repo.POST("/webhooks/:actionId/trigger", session.MustPush, api.TriggerWebhookAction)
+					repo.GET("/manual-actions", session.MustPush, api.GetManualActions)
+					repo.POST("/manual-actions/:actionId", session.MustPush, api.TriggerManualAction)
+					repo.POST("/webhooks/:actionId/trigger", session.MustPush, api.TriggerWebhookAction)
 
 					// requires push permissions
 					repo.GET("/cron", session.MustPush, api.GetCronList)

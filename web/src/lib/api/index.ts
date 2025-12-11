@@ -12,6 +12,7 @@ import type {
   PipelineConfig,
   PipelineFeed,
   PipelineLog,
+  PipelineTabDefinition,
   PullRequest,
   QueueInfo,
   Registry,
@@ -150,6 +151,10 @@ export default class WoodpeckerClient extends ApiClient {
 
   async getPipelineMetadata(repoId: number, pipelineNumber: number): Promise<any> {
     return this._get(`/api/repos/${repoId}/pipelines/${pipelineNumber}/metadata`) as Promise<any>;
+  }
+
+  async getPipelineTabs(repoId: number, pipelineNumber: number): Promise<PipelineTabDefinition[]> {
+    return this._get(`/api/repos/${repoId}/pipelines/${pipelineNumber}/tabs`) as Promise<PipelineTabDefinition[]>;
   }
 
   async getPipelineFeed(): Promise<PipelineFeed[]> {

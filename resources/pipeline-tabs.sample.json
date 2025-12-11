@@ -1,0 +1,16 @@
+[
+  {
+    "id": "reports",
+    "title": "Reports",
+    "icon": "file",
+    "requires_push": true,
+    "components": [
+      {
+        "type": "pipeline-reports-section",
+        "props": {
+          "description": "Custom webhook / test automation reports"
+        }
+      }
+    ]
+  }
+]
