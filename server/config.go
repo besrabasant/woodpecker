@@ -93,4 +93,5 @@ var Config = struct {
 		Orgs            *permissions.Orgs
 		OwnersAllowlist *permissions.OwnersAllowlist
 	}
+	ManualActions []model.ManualActionDefinition
 }{}

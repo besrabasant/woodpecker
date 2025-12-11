@@ -2,6 +2,8 @@ import ApiClient, { encodeQueryString } from './client';
 import type {
   Agent,
   Cron,
+  ManualActionDefinition,
+  ManualActionTriggerPayload,
   ExtensionSettings,
   Forge,
   Org,
@@ -91,6 +93,30 @@ export default class WoodpeckerClient extends ApiClient {
 
   async createPipeline(repoId: number, options: PipelineOptions): Promise<Pipeline> {
     return this._post(`/api/repos/${repoId}/pipelines`, options) as Promise<Pipeline>;
+  }
+
+  async getManualActions(repoId: number): Promise<ManualActionDefinition[]> {
+    return this._get(`/api/repos/${repoId}/manual-actions`) as Promise<ManualActionDefinition[]>;
+  }
+
+  async triggerManualAction(
+    repoId: number,
+    actionId: string,
+    payload: ManualActionTriggerPayload,
+  ): Promise<{ status: number; success: boolean }> {
+    return this._post(`/api/repos/${repoId}/manual-actions/${actionId}`, payload) as Promise<{
+      status: number;
+      success: boolean;
+      body?: string;
+    }>;
+  }
+
+  async triggerWebhookAction(repoId: number, actionId: string): Promise<{ status: number; success: boolean }> {
+    return this._post(`/api/repos/${repoId}/webhooks/${actionId}/trigger`, {}) as Promise<{
+      status: number;
+      success: boolean;
+      body?: string;
+    }>;
   }
 
   // Deploy triggers a deployment for an existing pipeline using the

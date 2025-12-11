@@ -1,6 +1,6 @@
 import type { Component } from 'vue';
-import { createRouter, createWebHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
 import useAuthentication from '~/compositions/useAuthentication';
 import useConfig from '~/compositions/useConfig';
@@ -377,11 +377,11 @@ router.beforeEach(async (to, _, next) => {
   }
 
   const authentication = useAuthentication();
-  const authenticationRequired = to.matched.some((record) => record.meta.authentication === 'required');
-  if (authenticationRequired && !authentication.isAuthenticated) {
-    next({ name: 'login', query: { url: to.fullPath } });
-    return;
-  }
+  // const authenticationRequired = to.matched.some((record) => true || record.meta.authentication === 'required');
+  // if (authenticationRequired && !authentication.isAuthenticated) {
+  //   next({ name: 'login', query: { url: to.fullPath } });
+  //   return;
+  // }
 
   next();
 });

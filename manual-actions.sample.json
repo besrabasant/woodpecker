@@ -1,0 +1,12 @@
+[
+  {
+    "id": "n8n-webhook",
+    "title": "Trigger n8n Workflow",
+    "description": "Calls the n8n webhook endpoint to start the default workflow with optional payload overrides.",
+    "request": {
+      "url": "http://192.168.1.15:5678/webhook/3063e64f-da0a-430b-bc27-e17753b425e1",
+      "method": "GET",
+      "timeout": "15s"
+    }
+  }
+]

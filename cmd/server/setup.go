@@ -18,6 +18,7 @@ package main
 import (
 	"context"
 	"encoding/base32"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -257,6 +258,13 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	server.Config.Server.RootPath = rootPath
 	server.Config.Server.CustomCSSFile = strings.TrimSpace(c.String("custom-css-file"))
 	server.Config.Server.CustomJsFile = strings.TrimSpace(c.String("custom-js-file"))
+	if manualActionsFile := strings.TrimSpace(c.String("server-manual-actions-file")); manualActionsFile != "" {
+		manualActions, err := loadManualActions(manualActionsFile)
+		if err != nil {
+			return err
+		}
+		server.Config.ManualActions = manualActions
+	}
 	server.Config.Pipeline.Networks = c.StringSlice("network")
 	server.Config.Pipeline.Volumes = c.StringSlice("volume")
 	server.Config.WebUI.EnableSwagger = c.Bool("enable-swagger")
@@ -279,4 +287,27 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	server.Config.Permissions.Orgs = permissions.NewOrgs(c.StringSlice("orgs"))
 	server.Config.Permissions.OwnersAllowlist = permissions.NewOwnersAllowlist(c.StringSlice("repo-owners"))
 	return nil
+}
+
+func loadManualActions(path string) ([]model.ManualActionDefinition, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read manual actions file: %w", err)
+	}
+	defs := make([]model.ManualActionDefinition, 0)
+	if err := json.Unmarshal(data, &defs); err != nil {
+		return nil, fmt.Errorf("parse manual actions file: %w", err)
+	}
+	seen := map[string]struct{}{}
+	for i := range defs {
+		defs[i].Request.Method = strings.ToUpper(strings.TrimSpace(defs[i].Request.Method))
+		if err := defs[i].Validate(); err != nil {
+			return nil, err
+		}
+		if _, ok := seen[defs[i].ID]; ok {
+			return nil, fmt.Errorf("duplicate manual action id %s", defs[i].ID)
+		}
+		seen[defs[i].ID] = struct{}{}
+	}
+	return defs, nil
 }

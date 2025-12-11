@@ -101,6 +101,11 @@ var flags = append([]cli.Flag{
 		Usage:   "file path for the server to serve a custom .JS file, used for customizing the UI",
 	},
 	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_SERVER_MANUAL_ACTIONS_FILE"),
+		Name:    "server-manual-actions-file",
+		Usage:   "path to a JSON file that defines manual webhook trigger actions exposed in the UI",
+	},
+	&cli.StringFlag{
 		Sources: cli.EnvVars("WOODPECKER_GRPC_ADDR"),
 		Name:    "grpc-addr",
 		Usage:   "grpc address",

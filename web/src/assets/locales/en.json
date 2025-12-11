@@ -48,7 +48,20 @@
         "name": "Variable name",
         "value": "Variable value"
       },
-      "show_pipelines": "Show pipelines"
+      "show_pipelines": "Show pipelines",
+      "webhooks": {
+        "title": "Trigger webhook actions",
+        "desc": "Trigger configured webhooks such as n8n workflows using the metadata provided by the server.",
+        "empty": "No webhook actions are configured for this repository.",
+        "sections": {
+          "query": "Query parameters",
+          "headers": "Headers",
+          "body": "Body"
+        },
+        "trigger": "Trigger {action}",
+        "success": "Triggered {action}",
+        "error": "Failed to trigger {action}"
+      }
     },
     "deploy_pipeline": {
       "title": "Trigger a deployment for current pipeline #{pipelineId}",

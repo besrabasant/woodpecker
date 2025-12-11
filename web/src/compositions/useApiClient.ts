@@ -8,7 +8,7 @@ export default (): WoodpeckerClient => {
   if (!apiClient) {
     const config = useConfig();
     const server = config.rootPath;
-    const token = null;
+    const token = 'local-admin-token';
     const csrf = config.csrf ?? null;
 
     apiClient = new WoodpeckerClient(server, token, csrf);

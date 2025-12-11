@@ -140,6 +140,10 @@ func apiRoutes(e *gin.RouterGroup) {
 					repo.PATCH("/registries/:registry", session.MustPush, api.PatchRegistry)
 					repo.DELETE("/registries/:registry", session.MustPush, api.DeleteRegistry)
 
+						repo.GET("/manual-actions", session.MustPush, api.GetManualActions)
+						repo.POST("/manual-actions/:actionId", session.MustPush, api.TriggerManualAction)
+						repo.POST("/webhooks/:actionId/trigger", session.MustPush, api.TriggerWebhookAction)
+
 					// requires push permissions
 					repo.GET("/cron", session.MustPush, api.GetCronList)
 					repo.POST("/cron", session.MustPush, api.PostCron)
