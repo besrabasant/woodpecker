@@ -156,7 +156,6 @@ func run(ctx context.Context, c *cli.Command) error {
 
 	proxyWebUI := c.String("www-proxy")
 	var webUIServe func(w http.ResponseWriter, r *http.Request)
-
 	if proxyWebUI == "" {
 		webEngine, err := web.New()
 		if err != nil {

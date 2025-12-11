@@ -31,6 +31,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"go.woodpecker-ci.org/woodpecker/v3/server"
+	"go.woodpecker-ci.org/woodpecker/v3/server/auth"
 	"go.woodpecker-ci.org/woodpecker/v3/server/cache"
 	"go.woodpecker-ci.org/woodpecker/v3/server/forge/setup"
 	"go.woodpecker-ci.org/woodpecker/v3/server/logging"
@@ -243,7 +244,6 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	}
 	server.Config.Server.DisableForgeWebhooks = c.Bool("server-disable-forge-webhooks")
 	server.Config.Server.AllowWebhookFailure = c.Bool("server-allow-webhook-failure")
-	server.Config.Server.AdminToken = c.String("server-admin-token")
 	server.Config.Server.OAuthHost = serverHost
 	server.Config.Server.Port = c.String("server-addr")
 	server.Config.Server.PortTLS = c.String("server-addr-tls")
@@ -282,6 +282,7 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	server.Config.WebUI.EnableSwagger = c.Bool("enable-swagger")
 	server.Config.WebUI.SkipVersionCheck = c.Bool("skip-version-check")
 	server.Config.Pipeline.PrivilegedPlugins = c.StringSlice("plugins-privileged")
+	auth.ConfigureJWT(server.Config.Server.JWTSecret, server.Config.Server.Host, server.Config.Server.Host, server.Config.Server.SessionExpires)
 
 	// prometheus
 	server.Config.Prometheus.AuthToken = c.String("prometheus-auth-token")
@@ -289,12 +290,6 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	// permissions
 	server.Config.Permissions.Open = c.Bool("open")
 	adminUsers := c.StringSlice("admin")
-	if len(adminUsers) > 0 {
-		server.Config.Server.AdminTokenUser = adminUsers[0]
-	}
-	if server.Config.Server.AdminToken != "" && server.Config.Server.AdminTokenUser == "" {
-		log.Warn().Msg("WOODPECKER_TOKEN provided but no admin user defined via WOODPECKER_ADMIN; token will be ignored")
-	}
 	server.Config.Permissions.Admins = permissions.NewAdmins(adminUsers)
 	server.Config.Permissions.Orgs = permissions.NewOrgs(c.StringSlice("orgs"))
 	server.Config.Permissions.OwnersAllowlist = permissions.NewOwnersAllowlist(c.StringSlice("repo-owners"))

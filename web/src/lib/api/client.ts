@@ -1,3 +1,5 @@
+import { isValidJwt } from '../authToken';
+
 export interface ApiError {
   status: number;
   message: string;
@@ -36,16 +38,18 @@ export default class ApiClient {
 
   constructor(server: string, token: string | null, csrf: string | null) {
     this.server = server;
-    this.token = token;
+    this.token = isValidJwt(token) ? token : null;
     this.csrf = csrf;
   }
 
   private async _request(method: string, path: string, data?: unknown): Promise<unknown> {
+    const bearer = isValidJwt(this.token) ? this.token : null;
     const res = await fetch(`${this.server}${path}`, {
       method,
+      credentials: 'include',
       headers: {
         ...(method !== 'GET' && this.csrf !== null ? { 'X-CSRF-TOKEN': this.csrf } : {}),
-        ...(this.token !== null ? { Authorization: `Bearer ${this.token}` } : {}),
+        ...(bearer !== null ? { Authorization: `Bearer ${bearer}` } : {}),
         ...(data !== undefined ? { 'Content-Type': 'application/json' } : {}),
       },
       body: data !== undefined ? JSON.stringify(data) : undefined,
@@ -57,14 +61,16 @@ export default class ApiClient {
       if (resText) {
         message = `${res.statusText}: ${resText}`;
       }
-      const error: ApiError = {
+      const apiError: ApiError = {
         status: res.status,
         message,
       };
       if (this.onerror) {
-        this.onerror(error);
+        this.onerror(apiError);
       }
-      throw new Error(message);
+      const error = new Error(message) as Error & ApiError;
+      error.status = apiError.status;
+      throw error;
     }
 
     const contentType = res.headers.get('Content-Type');
@@ -118,5 +124,9 @@ export default class ApiClient {
 
   setErrorHandler(onerror: (err: ApiError) => void) {
     this.onerror = onerror;
+  }
+
+  setToken(token: string | null) {
+    this.token = token !== null && isValidJwt(token) ? token : null;
   }
 }

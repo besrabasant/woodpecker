@@ -18,6 +18,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"go.woodpecker-ci.org/woodpecker/v3/cli/admin"
+	"go.woodpecker-ci.org/woodpecker/v3/cli/admin/user"
 	"go.woodpecker-ci.org/woodpecker/v3/cli/common"
 	"go.woodpecker-ci.org/woodpecker/v3/cli/exec"
 	"go.woodpecker-ci.org/woodpecker/v3/cli/info"
@@ -47,6 +48,7 @@ func newApp() *cli.Command {
 	}
 	app.Commands = []*cli.Command{
 		admin.Command,
+		user.Command,
 		exec.Command,
 		info.Command,
 		lint.Command,

@@ -120,6 +120,20 @@ export default class WoodpeckerClient extends ApiClient {
     }>;
   }
 
+  async loginWithPassword(credentials: { username: string; password: string }): Promise<{
+    success: boolean;
+    message?: string;
+    token?: string;
+    expires_in?: number;
+  }> {
+    return this._post(`/api/auth/login/password`, credentials) as Promise<{
+      success: boolean;
+      message?: string;
+      token?: string;
+      expires_in?: number;
+    }>;
+  }
+
   // Deploy triggers a deployment for an existing pipeline using the
   // specified target environment and task.
   async deployPipeline(repoId: number, pipelineNumber: string, options: DeploymentOptions): Promise<Pipeline> {

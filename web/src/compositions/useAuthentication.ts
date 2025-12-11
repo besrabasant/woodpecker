@@ -1,5 +1,6 @@
 import useConfig from '~/compositions/useConfig';
 import useUserConfig from '~/compositions/useUserConfig';
+import { storeAuthToken } from '~/lib/authToken';
 
 export default () =>
   ({
@@ -13,5 +14,9 @@ export default () =>
         config.setUserConfig('redirectUrl', url);
       }
       window.location.href = `${useConfig().rootPath}/authorize?${forgeId !== undefined ? `forge_id=${forgeId}` : ''}`;
+    },
+    logout() {
+      storeAuthToken(null);
+      window.location.href = `${useConfig().rootPath}/logout`;
     },
   }) as const;

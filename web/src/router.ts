@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import useConfig from '~/compositions/useConfig';
 import useUserConfig from '~/compositions/useUserConfig';
+import useAuthentication from './compositions/useAuthentication';
 
 const { rootPath } = useConfig();
 const routes: RouteRecordRaw[] = [
@@ -381,12 +382,12 @@ router.beforeEach(async (to, _, next) => {
     next(redirectUrl);
   }
 
-  // const authentication = useAuthentication();
-  // const authenticationRequired = to.matched.some((record) => record.meta.authentication === 'required');
-  // if (authenticationRequired && !authentication.isAuthenticated) {
-  //   next({ name: 'login', query: { url: to.fullPath } });
-  //   return;
-  // }
+  const authentication = useAuthentication();
+  const authenticationRequired = to.matched.some((record) => record.meta.authentication === 'required');
+  if (authenticationRequired && !authentication.isAuthenticated) {
+    next({ name: 'login', query: { url: to.fullPath } });
+    return;
+  }
 
   next();
 });

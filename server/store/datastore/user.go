@@ -39,6 +39,12 @@ func (s storage) GetUserByLogin(forgeID int64, login string) (*model.User, error
 	return user, wrapGet(sess.Where("forge_id = ? AND login=?", forgeID, login).Get(user))
 }
 
+func (s storage) GetUserByEmail(forgeID int64, email string) (*model.User, error) {
+	sess := s.engine.NewSession()
+	user := new(model.User)
+	return user, wrapGet(sess.Where("forge_id = ? AND email=?", forgeID, email).Get(user))
+}
+
 func (s storage) GetUserList(p *model.ListOptions) ([]*model.User, error) {
 	var users []*model.User
 	return users, s.paginate(p).OrderBy("login").Find(&users)

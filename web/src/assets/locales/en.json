@@ -2,6 +2,8 @@
   "cancel": "Cancel",
   "login_to_woodpecker_with": "Login to Woodpecker with",
   "login": "Login",
+  "login_password_invalid": "Invalid username or password.",
+  "login_password_error": "Unable to log in with username and password. Please try again later.",
   "repos": "Repos",
   "repositories": {
     "title": "Repositories",

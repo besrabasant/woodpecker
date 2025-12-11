@@ -66,35 +66,53 @@ func Parse(allowedTypes []Type, raw string, fn SecretFunc) (*Token, error) {
 }
 
 func ParseRequest(allowedTypes []Type, r *http.Request, fn SecretFunc) (*Token, error) {
-	// first we attempt to get the token from the
-	// authorization header.
-	token := r.Header.Get("Authorization")
-	if len(token) != 0 {
-		log.Trace().Msgf("token.ParseRequest: found token in header: %s", token)
-		bearer := token
-		if _, err := fmt.Sscanf(token, "Bearer %s", &bearer); err != nil {
+	var lastErr error
+
+	tryParse := func(raw string) (*Token, error) {
+		parsed, err := Parse(allowedTypes, raw, fn)
+		if err != nil {
+			lastErr = err
 			return nil, err
 		}
-		return Parse(allowedTypes, bearer, fn)
+		return parsed, nil
 	}
 
-	token = r.Header.Get("X-Gitlab-Token")
-	if len(token) != 0 {
-		return Parse(allowedTypes, token, fn)
+	// first we attempt to get the token from the
+	// authorization header.
+	if token := r.Header.Get("Authorization"); len(token) != 0 {
+		log.Trace().Msgf("token.ParseRequest: found token in header: %s", token)
+		bearer := token
+		if _, err := fmt.Sscanf(token, "Bearer %s", &bearer); err == nil {
+			if parsed, err := tryParse(bearer); err == nil {
+				return parsed, nil
+			}
+		} else {
+			lastErr = err
+		}
+	}
+
+	if token := r.Header.Get("X-Gitlab-Token"); len(token) != 0 {
+		if parsed, err := tryParse(token); err == nil {
+			return parsed, nil
+		}
 	}
 
 	// then we attempt to get the token from the
 	// access_token url query parameter
-	token = r.FormValue("access_token")
-	if len(token) != 0 {
-		return Parse(allowedTypes, token, fn)
+	if token := r.FormValue("access_token"); len(token) != 0 {
+		if parsed, err := tryParse(token); err == nil {
+			return parsed, nil
+		}
 	}
 
 	// and finally we attempt to get the token from
 	// the user session cookie
 	cookie, err := r.Cookie("user_sess")
 	if err != nil {
-		return nil, err
+		if lastErr == nil {
+			lastErr = err
+		}
+		return nil, lastErr
 	}
 	return Parse(allowedTypes, cookie.Value, fn)
 }

@@ -1420,6 +1420,217 @@ func (_c *MockStore_DeleteUser_Call) RunAndReturn(run func(user *model.User) err
 	return _c
 }
 
+// AuthUserFindByUsername provides a mock function for the type MockStore
+func (_mock *MockStore) AuthUserFindByUsername(username string) (*model.AuthUser, error) {
+	ret := _mock.Called(username)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AuthUserFindByUsername")
+	}
+
+	var r0 *model.AuthUser
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(string) (*model.AuthUser, error)); ok {
+		return returnFunc(username)
+	}
+	if returnFunc, ok := ret.Get(0).(func(string) *model.AuthUser); ok {
+		r0 = returnFunc(username)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.AuthUser)
+		}
+	}
+
+	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
+		r1 = returnFunc(username)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// MockStore_AuthUserFindByUsername_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AuthUserFindByUsername'
+type MockStore_AuthUserFindByUsername_Call struct {
+	*mock.Call
+}
+
+// AuthUserFindByUsername is a helper method to define mock.On call
+//   - username string
+func (_e *MockStore_Expecter) AuthUserFindByUsername(username interface{}) *MockStore_AuthUserFindByUsername_Call {
+	return &MockStore_AuthUserFindByUsername_Call{Call: _e.mock.On("AuthUserFindByUsername", username)}
+}
+
+func (_c *MockStore_AuthUserFindByUsername_Call) Run(run func(username string)) *MockStore_AuthUserFindByUsername_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string))
+	})
+	return _c
+}
+
+func (_c *MockStore_AuthUserFindByUsername_Call) Return(authUser *model.AuthUser, err error) *MockStore_AuthUserFindByUsername_Call {
+	_c.Call.Return(authUser, err)
+	return _c
+}
+
+func (_c *MockStore_AuthUserFindByUsername_Call) RunAndReturn(run func(string) (*model.AuthUser, error)) *MockStore_AuthUserFindByUsername_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// AuthUserCreate provides a mock function for the type MockStore
+func (_mock *MockStore) AuthUserCreate(authUser *model.AuthUser) error {
+	ret := _mock.Called(authUser)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AuthUserCreate")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*model.AuthUser) error); ok {
+		r0 = returnFunc(authUser)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStore_AuthUserCreate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AuthUserCreate'
+type MockStore_AuthUserCreate_Call struct {
+	*mock.Call
+}
+
+// AuthUserCreate is a helper method to define mock.On call
+//   - authUser *model.AuthUser
+func (_e *MockStore_Expecter) AuthUserCreate(authUser interface{}) *MockStore_AuthUserCreate_Call {
+	return &MockStore_AuthUserCreate_Call{Call: _e.mock.On("AuthUserCreate", authUser)}
+}
+
+func (_c *MockStore_AuthUserCreate_Call) Run(run func(authUser *model.AuthUser)) *MockStore_AuthUserCreate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *model.AuthUser
+		if args[0] != nil {
+			arg0 = args[0].(*model.AuthUser)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStore_AuthUserCreate_Call) Return(err error) *MockStore_AuthUserCreate_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStore_AuthUserCreate_Call) RunAndReturn(run func(authUser *model.AuthUser) error) *MockStore_AuthUserCreate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// AuthUserUpdate provides a mock function for the type MockStore
+func (_mock *MockStore) AuthUserUpdate(authUser *model.AuthUser) error {
+	ret := _mock.Called(authUser)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AuthUserUpdate")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*model.AuthUser) error); ok {
+		r0 = returnFunc(authUser)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStore_AuthUserUpdate_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AuthUserUpdate'
+type MockStore_AuthUserUpdate_Call struct {
+	*mock.Call
+}
+
+// AuthUserUpdate is a helper method to define mock.On call
+//   - authUser *model.AuthUser
+func (_e *MockStore_Expecter) AuthUserUpdate(authUser interface{}) *MockStore_AuthUserUpdate_Call {
+	return &MockStore_AuthUserUpdate_Call{Call: _e.mock.On("AuthUserUpdate", authUser)}
+}
+
+func (_c *MockStore_AuthUserUpdate_Call) Run(run func(authUser *model.AuthUser)) *MockStore_AuthUserUpdate_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *model.AuthUser
+		if args[0] != nil {
+			arg0 = args[0].(*model.AuthUser)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStore_AuthUserUpdate_Call) Return(err error) *MockStore_AuthUserUpdate_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStore_AuthUserUpdate_Call) RunAndReturn(run func(authUser *model.AuthUser) error) *MockStore_AuthUserUpdate_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// AuthUserDelete provides a mock function for the type MockStore
+func (_mock *MockStore) AuthUserDelete(authUser *model.AuthUser) error {
+	ret := _mock.Called(authUser)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AuthUserDelete")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(*model.AuthUser) error); ok {
+		r0 = returnFunc(authUser)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockStore_AuthUserDelete_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'AuthUserDelete'
+type MockStore_AuthUserDelete_Call struct {
+	*mock.Call
+}
+
+// AuthUserDelete is a helper method to define mock.On call
+//   - authUser *model.AuthUser
+func (_e *MockStore_Expecter) AuthUserDelete(authUser interface{}) *MockStore_AuthUserDelete_Call {
+	return &MockStore_AuthUserDelete_Call{Call: _e.mock.On("AuthUserDelete", authUser)}
+}
+
+func (_c *MockStore_AuthUserDelete_Call) Run(run func(authUser *model.AuthUser)) *MockStore_AuthUserDelete_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 *model.AuthUser
+		if args[0] != nil {
+			arg0 = args[0].(*model.AuthUser)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStore_AuthUserDelete_Call) Return(err error) *MockStore_AuthUserDelete_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockStore_AuthUserDelete_Call) RunAndReturn(run func(authUser *model.AuthUser) error) *MockStore_AuthUserDelete_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ForgeCreate provides a mock function for the type MockStore
 func (_mock *MockStore) ForgeCreate(forge *model.Forge) error {
 	ret := _mock.Called(forge)
@@ -2794,6 +3005,74 @@ func (_c *MockStore_GetUserByLogin_Call) Return(user *model.User, err error) *Mo
 }
 
 func (_c *MockStore_GetUserByLogin_Call) RunAndReturn(run func(n int64, s string) (*model.User, error)) *MockStore_GetUserByLogin_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUserByEmail provides a mock function for the type MockStore
+func (_mock *MockStore) GetUserByEmail(n int64, s string) (*model.User, error) {
+	ret := _mock.Called(n, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserByEmail")
+	}
+
+	var r0 *model.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(int64, string) (*model.User, error)); ok {
+		return returnFunc(n, s)
+	}
+	if returnFunc, ok := ret.Get(0).(func(int64, string) *model.User); ok {
+		r0 = returnFunc(n, s)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(int64, string) error); ok {
+		r1 = returnFunc(n, s)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockStore_GetUserByEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserByEmail'
+type MockStore_GetUserByEmail_Call struct {
+	*mock.Call
+}
+
+// GetUserByEmail is a helper method to define mock.On call
+//   - n int64
+//   - s string
+func (_e *MockStore_Expecter) GetUserByEmail(n interface{}, s interface{}) *MockStore_GetUserByEmail_Call {
+	return &MockStore_GetUserByEmail_Call{Call: _e.mock.On("GetUserByEmail", n, s)}
+}
+
+func (_c *MockStore_GetUserByEmail_Call) Run(run func(n int64, s string)) *MockStore_GetUserByEmail_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 int64
+		if args[0] != nil {
+			arg0 = args[0].(int64)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockStore_GetUserByEmail_Call) Return(user *model.User, err error) *MockStore_GetUserByEmail_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *MockStore_GetUserByEmail_Call) RunAndReturn(run func(n int64, s string) (*model.User, error)) *MockStore_GetUserByEmail_Call {
 	_c.Call.Return(run)
 	return _c
 }

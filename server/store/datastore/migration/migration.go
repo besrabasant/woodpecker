@@ -55,6 +55,7 @@ var migrationTasks = []*xormigrate.Migration{
 	&unsanitizeOrgAndUserNames,
 	&replaceZeroForgeIDsInOrgs,
 	&fixForgeColumns,
+	&addAuthUsers,
 }
 
 var allBeans = []any{
@@ -76,6 +77,7 @@ var allBeans = []any{
 	new(model.Forge),
 	new(model.Workflow),
 	new(model.Org),
+	new(model.AuthUser),
 }
 
 // TODO: make xormigrate context aware

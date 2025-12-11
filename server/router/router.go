@@ -17,6 +17,7 @@ package router
 import (
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
@@ -39,15 +40,13 @@ func Load(noRouteHandler http.HandlerFunc, middleware ...gin.HandlerFunc) http.H
 	e.UseRawPath = true
 	e.Use(gin.Recovery())
 
-	e.Use(func(c *gin.Context) {
-		log.Trace().Msgf("[%s] %s", c.Request.Method, c.Request.URL.String())
-		c.Next()
-	})
+	e.Use(requestLogger())
 
 	e.Use(header.NoCache)
 	e.Use(header.Options)
 	e.Use(header.Secure)
 	e.Use(middleware...)
+
 	e.Use(session.SetUser())
 	e.Use(token.Refresh)
 
@@ -86,4 +85,25 @@ func setupSwaggerConfigAndRoutes(e *gin.Engine) {
 func getHost(s string) string {
 	parse, _ := url.Parse(s)
 	return parse.Host
+}
+
+func requestLogger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+		req := c.Request
+		log.Debug().
+			Str("method", req.Method).
+			Str("path", req.URL.Path).
+			Msg("incoming request")
+
+		c.Next()
+
+		duration := time.Since(start)
+		log.Debug().
+			Int("status", c.Writer.Status()).
+			Str("method", req.Method).
+			Str("path", req.URL.Path).
+			Dur("duration", duration).
+			Msg("completed request")
+	}
 }

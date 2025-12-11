@@ -42,6 +42,7 @@ import Settings from '~/components/layout/Settings.vue';
 import useApiClient from '~/compositions/useApiClient';
 import useConfig from '~/compositions/useConfig';
 import { useWPTitle } from '~/compositions/useWPTitle';
+import useAuthentication from '~/compositions/useAuthentication';
 
 const { rootPath, enableSwagger } = useConfig();
 
@@ -53,6 +54,7 @@ onMounted(async () => {
 });
 
 const address = `${window.location.protocol}//${window.location.host}${rootPath}`; // port is included in location.host
+const authentication = useAuthentication();
 
 const usageWithCurl = computed(() => {
   let usage = `export WOODPECKER_SERVER="${address}"\n`;
@@ -68,7 +70,7 @@ const cliDownload = 'https://github.com/woodpecker-ci/woodpecker/releases';
 
 const resetToken = async () => {
   token.value = await apiClient.resetToken();
-  window.location.href = `${address}/logout`;
+  authentication.logout();
 };
 
 const { t } = useI18n();

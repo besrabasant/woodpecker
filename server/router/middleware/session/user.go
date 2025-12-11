@@ -15,9 +15,7 @@
 package session
 
 import (
-	"crypto/subtle"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -26,6 +24,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"go.woodpecker-ci.org/woodpecker/v3/server"
+	"go.woodpecker-ci.org/woodpecker/v3/server/auth"
 	"go.woodpecker-ci.org/woodpecker/v3/server/model"
 	"go.woodpecker-ci.org/woodpecker/v3/server/store"
 	"go.woodpecker-ci.org/woodpecker/v3/server/store/types"
@@ -76,13 +75,30 @@ func SetUser() gin.HandlerFunc {
 			}
 		}
 		if user == nil {
-			if raw := getStaticAPIToken(c.Request); raw != "" {
-				user, err = authenticateRequestToken(c, raw)
+			authHeader := c.GetHeader("Authorization")
+			if strings.HasPrefix(strings.ToLower(authHeader), "bearer ") {
+				info, err := auth.AuthenticateRequest(c.Request)
 				if err != nil {
-					log.Error().Err(err).Msg("failed to authenticate static API token")
-				} else if user != nil {
-					c.Set("user", user)
+					log.Error().Err(err).Msg("failed to authenticate bearer token")
+					c.AbortWithStatus(http.StatusUnauthorized)
+					return
 				}
+				userID, parseErr := strconv.ParseInt(info.GetID(), 10, 64)
+				if parseErr != nil {
+					log.Error().Err(parseErr).Msg("failed to parse user id from bearer token")
+					c.AbortWithStatus(http.StatusUnauthorized)
+					return
+				}
+				user, err = store.FromContext(c).GetUser(userID)
+				if err != nil {
+					if errors.Is(err, types.RecordNotExist) {
+						c.String(http.StatusUnauthorized, "User not authorized")
+					} else {
+						c.AbortWithStatus(http.StatusInternalServerError)
+					}
+					return
+				}
+				c.Set("user", user)
 			}
 		}
 		c.Next()
@@ -179,98 +195,5 @@ func MustOrgMember(admin bool) gin.HandlerFunc {
 		}
 
 		c.Next()
-	}
-}
-
-func authenticateRequestToken(c *gin.Context, presentedToken string) (*model.User, error) {
-	if presentedToken == "" {
-		return nil, nil
-	}
-
-	if user, err := authenticateAdminToken(c, presentedToken); err != nil || user != nil {
-		return user, err
-	}
-
-	return nil, nil
-}
-
-func authenticateAdminToken(c *gin.Context, presentedToken string) (*model.User, error) {
-	expected := server.Config.Server.AdminToken
-	if expected == "" {
-		return nil, nil
-	}
-	if subtle.ConstantTimeCompare([]byte(presentedToken), []byte(expected)) != 1 {
-		return nil, nil
-	}
-
-	adminLogin := server.Config.Server.AdminTokenUser
-	if adminLogin == "" {
-		return nil, fmt.Errorf("admin token configured but no WOODPECKER_ADMIN user available")
-	}
-
-	user, err := findAdminUserByLogin(c, adminLogin)
-	if err != nil {
-		return nil, err
-	}
-
-	if !user.Admin {
-		return nil, fmt.Errorf("user %q is not marked as admin", user.Login)
-	}
-
-	return user, nil
-}
-
-func findAdminUserByLogin(c *gin.Context, login string) (*model.User, error) {
-	_store := store.FromContext(c)
-	forges, err := _store.ForgeList(&model.ListOptions{All: true})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(forges) == 0 {
-		user, err := _store.GetUserByLogin(1, login)
-		if err != nil && !errors.Is(err, types.RecordNotExist) {
-			return nil, err
-		}
-		if err == nil {
-			return user, nil
-		}
-	}
-
-	for _, forge := range forges {
-		user, err := _store.GetUserByLogin(forge.ID, login)
-		if err == nil {
-			return user, nil
-		}
-		if !errors.Is(err, types.RecordNotExist) {
-			return nil, err
-		}
-	}
-
-	return nil, fmt.Errorf("admin user %q not found", login)
-}
-
-func getStaticAPIToken(r *http.Request) string {
-	if token := extractFromAuthorizationHeader(r.Header.Get("Authorization")); token != "" {
-		return token
-	}
-	return r.Header.Get("X-Woodpecker-Token")
-}
-
-func extractFromAuthorizationHeader(header string) string {
-	if header == "" {
-		return ""
-	}
-
-	parts := strings.Fields(header)
-	if len(parts) != 2 {
-		return ""
-	}
-
-	switch strings.ToLower(parts[0]) {
-	case "bearer", "token":
-		return parts[1]
-	default:
-		return ""
 	}
 }

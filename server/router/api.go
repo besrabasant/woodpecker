@@ -253,6 +253,10 @@ func apiRoutes(e *gin.RouterGroup) {
 		apiBase.GET("/signature/public-key", session.MustUser(), api.GetSignaturePublicKey)
 
 		apiBase.POST("/hook", api.PostHook)
+		auth := apiBase.Group("/auth")
+		{
+			auth.POST("/login/password", api.PostLoginWithPassword)
+		}
 
 		stream := apiBase.Group("/stream")
 		{

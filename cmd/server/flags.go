@@ -610,12 +610,6 @@ var flags = append([]cli.Flag{
 		Name:    "server-allow-webhook-failure",
 		Usage:   "allow repository activation to continue even if webhook creation fails",
 	},
-	&cli.StringFlag{
-		Sources: cli.EnvVars("WOODPECKER_TOKEN"),
-		Name:    "server-admin-token",
-		Usage:   "static admin API token that authenticates as the first user defined in WOODPECKER_ADMIN",
-		Hidden:  false,
-	},
 	//
 	// secrets encryption in DB
 	//

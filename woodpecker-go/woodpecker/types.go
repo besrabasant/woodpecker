@@ -46,6 +46,7 @@ type (
 		Avatar        string `json:"avatar_url"`
 		Active        bool   `json:"active"`
 		Admin         bool   `json:"admin"`
+		Password      string `json:"password,omitempty"`
 	}
 
 	TrustedConfiguration struct {

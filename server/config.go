@@ -46,8 +46,6 @@ var Config = struct {
 		WebhookHost          string
 		DisableForgeWebhooks bool
 		AllowWebhookFailure  bool
-		AdminToken           string
-		AdminTokenUser       string
 		Port                 string
 		PortTLS              string
 		AgentToken           string

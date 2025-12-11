@@ -20,9 +20,11 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/tink/go/subtle/random"
+	"golang.org/x/crypto/bcrypt"
 
 	"go.woodpecker-ci.org/woodpecker/v3/server/model"
 	"go.woodpecker-ci.org/woodpecker/v3/server/router/middleware/session"
@@ -151,30 +153,121 @@ func PatchUser(c *gin.Context) {
 //	@Tags			Users
 //	@Param			Authorization	header	string	true	"Insert your personal access token"	default(Bearer <personal access token>)
 //	@Param			user			body	User	true	"the user's data"
+type userCreateRequest struct {
+	Login    string `json:"login"`
+	Email    string `json:"email"`
+	Avatar   string `json:"avatar"`
+	ForgeID  int64  `json:"forge_id"`
+	Admin    bool   `json:"admin"`
+	Password string `json:"password"`
+}
+
 func PostUser(c *gin.Context) {
-	in := &model.User{}
+	_store := store.FromContext(c)
+	in := &userCreateRequest{}
 	err := c.Bind(in)
 	if err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	user := &model.User{
-		Login:  in.Login,
-		Email:  in.Email,
-		Avatar: in.Avatar,
-		Hash: base32.StdEncoding.EncodeToString(
-			random.GetRandomBytes(32),
-		),
-		ForgeID:       in.ForgeID,
-		ForgeRemoteID: model.ForgeRemoteID("0"), // TODO: search for the user in the forge and get the remote id
-	}
-	if err = user.Validate(); err != nil {
-		c.String(http.StatusBadRequest, err.Error())
+	login := strings.TrimSpace(in.Login)
+	if login == "" {
+		c.String(http.StatusBadRequest, "login is required")
 		return
 	}
-	if err = store.FromContext(c).CreateUser(user); err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	email := strings.TrimSpace(in.Email)
+	forgeID := in.ForgeID
+	if forgeID == 0 {
+		forgeID = defaultForgeID
+	}
+
+	var user *model.User
+	user, err = _store.GetUserByLogin(forgeID, login)
+	if err != nil {
+		if errors.Is(err, types.RecordNotExist) {
+			user = nil
+		} else {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	if user == nil && email != "" {
+		user, err = _store.GetUserByEmail(forgeID, email)
+		if err != nil {
+			if errors.Is(err, types.RecordNotExist) {
+				user = nil
+			} else {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
+	}
+
+	createdUser := false
+	if user == nil {
+		user = &model.User{
+			Login:  login,
+			Email:  email,
+			Avatar: in.Avatar,
+			Hash: base32.StdEncoding.EncodeToString(
+				random.GetRandomBytes(32),
+			),
+			ForgeID:       forgeID,
+			ForgeRemoteID: model.ForgeRemoteID("0"), // TODO: search for the user in the forge and get the remote id
+		}
+		user.Admin = in.Admin
+		if err = user.Validate(); err != nil {
+			c.String(http.StatusBadRequest, err.Error())
+			return
+		}
+		if err = _store.CreateUser(user); err != nil {
+			c.String(http.StatusInternalServerError, err.Error())
+			return
+		}
+		createdUser = true
+	}
+
+	password := strings.TrimSpace(in.Password)
+	if password != "" {
+		hash, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if hashErr != nil {
+			if createdUser {
+				_ = _store.DeleteUser(user)
+			}
+			c.String(http.StatusInternalServerError, hashErr.Error())
+			return
+		}
+		existingAuth, authErr := _store.AuthUserFindByUsername(login)
+		if authErr != nil && !errors.Is(authErr, types.RecordNotExist) {
+			if createdUser {
+				_ = _store.DeleteUser(user)
+			}
+			c.String(http.StatusInternalServerError, authErr.Error())
+			return
+		}
+		if existingAuth != nil {
+			existingAuth.UserID = user.ID
+			existingAuth.Username = login
+			existingAuth.PasswordHash = string(hash)
+			if err := _store.AuthUserUpdate(existingAuth); err != nil {
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+		} else {
+			authUser := &model.AuthUser{
+				UserID:       user.ID,
+				Username:     login,
+				PasswordHash: string(hash),
+			}
+			if err := _store.AuthUserCreate(authUser); err != nil {
+				if createdUser {
+					_ = _store.DeleteUser(user)
+				}
+				c.String(http.StatusInternalServerError, err.Error())
+				return
+			}
+		}
 	}
 	c.JSON(http.StatusOK, user)
 }

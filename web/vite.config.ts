@@ -5,7 +5,7 @@ import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite';
 import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import dotenv from 'dotenv';
-import type { Plugin } from 'vite';
+import type { Plugin, ProxyOptions } from 'vite';
 import prismjs from 'vite-plugin-prismjs';
 import svgLoader from 'vite-svg-loader';
 import type { ViteUserConfig } from 'vitest/config';
@@ -16,6 +16,37 @@ dotenv.config({ path: path.resolve(__dirname, '../.env'), quiet: true });
 const getEnvString = (envVar: string | undefined) => (envVar != null && envVar !== '' ? envVar : undefined);
 const viteUserSessCookie = getEnvString(process.env.VITE_DEV_USER_SESS_COOKIE);
 const viteDevProxy = getEnvString(process.env.VITE_DEV_PROXY);
+
+function createProxyOptions(): ProxyOptions {
+  const options: ProxyOptions = {
+    target: viteDevProxy,
+    changeOrigin: true,
+  };
+
+  if (viteUserSessCookie !== undefined) {
+    options.configure = (proxy) => {
+      proxy.on('proxyReq', (proxyReq, req) => {
+        const existingHeader = proxyReq.getHeader('cookie');
+        const headerValues: string[] = [];
+
+        if (Array.isArray(existingHeader)) {
+          headerValues.push(...existingHeader);
+        } else if (typeof existingHeader === 'string' && existingHeader.length > 0) {
+          headerValues.push(existingHeader);
+        }
+
+        const hasSessionCookie = headerValues.some((value) => value.includes('user_sess='));
+
+        if (!hasSessionCookie) {
+          headerValues.push(`user_sess=${viteUserSessCookie}`);
+          proxyReq.setHeader('cookie', headerValues.join('; '));
+        }
+      });
+    };
+  }
+
+  return options;
+}
 
 function woodpeckerInfoPlugin(): Plugin {
   return {
@@ -111,20 +142,8 @@ export default defineConfig({
     proxy:
       viteDevProxy !== undefined
         ? {
-            '/api': {
-              target: viteDevProxy,
-              changeOrigin: true,
-              headers: {
-                cookie: viteUserSessCookie !== undefined ? `user_sess=${viteUserSessCookie}` : '',
-              },
-            },
-            '/web-config.js': {
-              target: viteDevProxy,
-              changeOrigin: true,
-              headers: {
-                cookie: viteUserSessCookie !== undefined ? `user_sess=${viteUserSessCookie}` : '',
-              },
-            },
+            '/api': createProxyOptions(),
+            '/web-config.js': createProxyOptions(),
             '/authorize': {
               target: viteDevProxy,
               changeOrigin: true,

@@ -1,7 +1,7 @@
 <template>
   <Scaffold enable-tabs>
     <template #title>{{ $t('user.settings.settings') }}</template>
-    <template #headerActions><Button :text="$t('logout')" :to="`${address}/logout`" /></template>
+    <template #headerActions><Button :text="$t('logout')" @click="logout" /></template>
 
     <Tab icon="settings-outline" :to="{ name: 'user' }" :title="$t('user.settings.general.general')" />
     <Tab icon="secret" :to="{ name: 'user-secrets' }" :title="$t('secrets.secrets')" />
@@ -23,8 +23,10 @@ import Button from '~/components/atomic/Button.vue';
 import Scaffold from '~/components/layout/scaffold/Scaffold.vue';
 import Tab from '~/components/layout/scaffold/Tab.vue';
 import useConfig from '~/compositions/useConfig';
+import useAuthentication from '~/compositions/useAuthentication';
 
-const { userRegisteredAgents } = useConfig();
-
-const address = `${window.location.protocol}//${window.location.host}${useConfig().rootPath}`; // port is included in location.host
+const config = useConfig();
+const { userRegisteredAgents } = config;
+const authentication = useAuthentication();
+const logout = () => authentication.logout();
 </script>

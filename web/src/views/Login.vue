@@ -21,7 +21,15 @@
       </div>
       <div class="flex min-h-48 flex-col items-center justify-center gap-4 p-4 text-center md:w-2/5">
         <h1 class="text-wp-text-100 text-xl">{{ $t('login_to_woodpecker_with') }}</h1>
-        <div class="flex flex-col gap-2">
+        <div class="mt-6 w-full border-t border-wp-border-default pt-6 text-left">
+          <UsernamePasswordLogin
+            :loading="credentialsLoginLoading"
+            :error="credentialsLoginError"
+            @submit="handleCredentialsLogin"
+          />
+        </div>
+        <div class="mt-6 w-full border-t border-wp-border-default pt-6 text-left">
+          <div class="flex flex-col gap-2">
           <Button
             v-for="forge in forgesWithNameAndFavicon"
             :key="forge.id"
@@ -42,6 +50,7 @@
             {{ forge.name }}
           </Button>
         </div>
+        </div>
       </div>
     </div>
   </main>
@@ -58,16 +67,49 @@ import Error from '~/components/atomic/Error.vue';
 import Icon from '~/components/atomic/Icon.vue';
 import useApiClient from '~/compositions/useApiClient';
 import useAuthentication from '~/compositions/useAuthentication';
+import useConfig from '~/compositions/useConfig';
 import { useWPTitle } from '~/compositions/useWPTitle';
+import type { ApiError } from '~/lib/api/client';
 import type { Forge } from '~/lib/api/types';
+import { storeAuthToken } from '~/lib/authToken';
+import UsernamePasswordLogin from '~/views/login/components/UsernamePasswordLogin.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authentication = useAuthentication();
 const i18n = useI18n();
 const apiClient = useApiClient();
+const config = useConfig();
 
 const forges = ref<Forge[]>([]);
+const credentialsLoginLoading = ref(false);
+const credentialsLoginError = ref<string | undefined>(undefined);
+
+async function handleCredentialsLogin(payload: { username: string; password: string }) {
+  credentialsLoginError.value = undefined;
+  credentialsLoginLoading.value = true;
+  try {
+    const response = await apiClient.loginWithPassword(payload);
+    if (response?.token) {
+      storeAuthToken(response.token);
+      apiClient.setToken(response.token);
+    } else {
+      storeAuthToken(null);
+    }
+    const redirect = typeof route.query.url === 'string' ? route.query.url : '';
+    const target = redirect || config.rootPath || '/';
+    window.location.href = target;
+  } catch (err) {
+    const apiError = err as ApiError;
+    if (apiError?.status === 401) {
+      credentialsLoginError.value = i18n.t('login_password_invalid');
+    } else {
+      credentialsLoginError.value = i18n.t('login_password_error');
+    }
+  } finally {
+    credentialsLoginLoading.value = false;
+  }
+}
 
 function doLogin(forgeId?: number) {
   const url = typeof route.query.url === 'string' ? route.query.url : '';

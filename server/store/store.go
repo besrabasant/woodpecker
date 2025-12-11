@@ -30,6 +30,8 @@ type Store interface {
 	GetUserByRemoteID(int64, model.ForgeRemoteID) (*model.User, error)
 	// GetUserByLogin gets a user by its login name.
 	GetUserByLogin(int64, string) (*model.User, error)
+	// GetUserByEmail gets a user by its email address.
+	GetUserByEmail(int64, string) (*model.User, error)
 	// GetUserList gets a list of all users in the system.
 	GetUserList(p *model.ListOptions) ([]*model.User, error)
 	// GetUserCount gets a count of all users in the system.
@@ -40,6 +42,12 @@ type Store interface {
 	UpdateUser(*model.User) error
 	// DeleteUser deletes a user account.
 	DeleteUser(*model.User) error
+
+	// Auth Users
+	AuthUserFindByUsername(string) (*model.AuthUser, error)
+	AuthUserCreate(*model.AuthUser) error
+	AuthUserUpdate(*model.AuthUser) error
+	AuthUserDelete(*model.AuthUser) error
 
 	// Repos
 	// GetRepo gets a repo by unique ID.
