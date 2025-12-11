@@ -84,6 +84,7 @@ When running Woodpecker locally (for example via the included `docker-compose` s
 
 - `WOODPECKER_EXPERT_DISABLE_FORGE_WEBHOOKS`: disables webhook activation/deactivation when enabling repositories. This is useful when the forge cannot reach your local Woodpecker instance (e.g. running on `localhost`).
 - `WOODPECKER_EXPERT_ALLOW_WEBHOOK_FAILURE`: keeps repository activation successful even if Woodpecker fails to create the webhook at the forge. Combine with manual triggering or other automation to run pipelines without webhooks.
+- `WOODPECKER_TOKEN`: static admin API token. When present, API requests may authenticate via `Authorization: Bearer <token>` (or `X-Woodpecker-Token`) and Woodpecker will impersonate the admin user specified via `WOODPECKER_ADMIN`.
 
 Both variables are shown in `./.env` for convenience and can also be provided directly to the server container (or via `--server-disable-forge-webhooks` / `--server-allow-webhook-failure` flags).
 

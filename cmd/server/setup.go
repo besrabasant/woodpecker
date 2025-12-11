@@ -242,6 +242,7 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 	}
 	server.Config.Server.DisableForgeWebhooks = c.Bool("server-disable-forge-webhooks")
 	server.Config.Server.AllowWebhookFailure = c.Bool("server-allow-webhook-failure")
+	server.Config.Server.AdminToken = c.String("server-admin-token")
 	server.Config.Server.OAuthHost = serverHost
 	server.Config.Server.Port = c.String("server-addr")
 	server.Config.Server.PortTLS = c.String("server-addr-tls")
@@ -267,7 +268,14 @@ func setupEvilGlobals(ctx context.Context, c *cli.Command, s store.Store) (err e
 
 	// permissions
 	server.Config.Permissions.Open = c.Bool("open")
-	server.Config.Permissions.Admins = permissions.NewAdmins(c.StringSlice("admin"))
+	adminUsers := c.StringSlice("admin")
+	if len(adminUsers) > 0 {
+		server.Config.Server.AdminTokenUser = adminUsers[0]
+	}
+	if server.Config.Server.AdminToken != "" && server.Config.Server.AdminTokenUser == "" {
+		log.Warn().Msg("WOODPECKER_TOKEN provided but no admin user defined via WOODPECKER_ADMIN; token will be ignored")
+	}
+	server.Config.Permissions.Admins = permissions.NewAdmins(adminUsers)
 	server.Config.Permissions.Orgs = permissions.NewOrgs(c.StringSlice("orgs"))
 	server.Config.Permissions.OwnersAllowlist = permissions.NewOwnersAllowlist(c.StringSlice("repo-owners"))
 	return nil
